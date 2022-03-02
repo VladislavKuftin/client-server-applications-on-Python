@@ -1,7 +1,6 @@
-import chardet   # необходима предварительная инсталляция: pip install chardet
-import subprocess
 import platform
-
+import subprocess
+from chardet import detect
 
  #Задание 1: Каждое из слов «разработка», «сокет», «декоратор» представить в строковом формате и проверить тип и содержание соответствующих переменных.
  #Затем с помощью онлайн-конвертера преобразовать строковые представление в формат Unicode и также проверить тип и содержимое переменных
@@ -43,10 +42,16 @@ print('длинна строки: {}\n'.format(len(var)))
 
 ########################################################################
 print("part 3")
-word1 = input('Введите ваше слово:\n')
+VAR_1 = 'attribute'
+VAR_2 = 'класс'
+VAR_3 = 'функция'
+VAR_4 = 'type'
 
-print(word1.encode('utf-8'))
-print('\n')
+WORDS = [VAR_1, VAR_2, VAR_3, VAR_4]
+
+for word in WORDS:
+    if not word.isascii():
+        print(f'Слово "{word}" невозможно записать в виде байтовой строки')
 
 
 #Задание 4: Преобразовать слова «разработка», «администрирование», «protocol», «standard» из строкового представления в байтовое
@@ -64,23 +69,17 @@ print(word1.decode('utf-8'))
 
 
 print("part 5")
-ping_resurs = [['ping', 'yandex.ru'], ['ping', 'youtube.com']]
+urls = ['yandex.ru', 'youtube.com']
+code = '-n' if platform.system().lower() == 'windows' else '-c'
 
-for ping_now in ping_resurs:
-
-    ping_process = subprocess.Popen(ping_now, stdout=subprocess.PIPE)
-
-    i = 0
-
-    for line in ping_process.stdout:
-
-        if i < 10:
-            print(line)
-            line = line.decode('cp866').encode('utf-8')
-            print(line.decode('utf-8'))
-            i += 1
-        else:
-            break
+for url in urls:
+    args = ['ping', code, '4', url]
+    YA_PING = subprocess.Popen(args, stdout=subprocess.PIPE)
+    for line in YA_PING.stdout:
+        result = detect(line)
+        print(result)
+        line = line.decode(result['encoding']).encode('utf-8')
+        print(line.decode('utf-8'))
 
 
 # Задание 6: Создать текстовый файл test_file.txt, заполнить его тремя строками: «сетевое программирование», «сокет», «декоратор».
@@ -89,22 +88,41 @@ for ping_now in ping_resurs:
 ########################################################################
 
 
-print("part 6")
-resurs_string = ['сетевое программирование', 'сокет', 'декоратор']
+# print("part 6")
+# resurs_string = ['сетевое программирование', 'сокет', 'декоратор']
+#
+# # Создаем файл
+# with open('test.txt', 'w+') as f_n:
+#     for i in resurs_string:
+#         f_n.write(i + '\n')
+#     f_n.seek(0)
+#
+# print(f_n)  # печатаем объект файла, что бы узнать его кодировку
+#
+# file_coding = locale.getpreferredencoding()
+#
+# # Читаем из файла
+# with open('resurs.txt', 'r', encoding=file_coding) as f_n:
+#     for i in f_n:
+#         print(i)
+#
+#     f_n.seek(0)
+#
+#
 
-# Создаем файл
-with open('file.txt', 'w+') as f_n:
-    for i in resurs_string:
-        f_n.write(i + '\n')
-    f_n.seek(0)
+LINES_LST = ['сетевое программирование', 'сокет', 'декоратор']
+with open('test.txt', 'w') as file:
+    for line in LINES_LST:
+        file.write(f'{line}\n')
+file.close()
 
-print(f_n)  # печатаем объект файла, что бы узнать его кодировку
+# узнаем кодировку файла
+with open('test.txt', 'rb') as file:
+    CONTENT = file.read()
+ENCODING = detect(CONTENT)['encoding']
+print(ENCODING)
 
-file_coding = locale.getpreferredencoding()
-
-# Читаем из файла
-with open('resurs.txt', 'r', encoding=file_coding) as f_n:
-    for i in f_n:
-        print(i)
-
-    f_n.seek(0)
+# открываем файл в правильной кодировке
+with open('test.txt', 'r', encoding=ENCODING) as file:
+    CONTENT = file.read()
+print(CONTENT)
